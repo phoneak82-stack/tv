@@ -1,0 +1,36 @@
+name: EPG Weekly Sync
+
+on:
+  schedule:
+    # ⏰ Понедельник 00:01 МСК = Воскресенье 21:01 UTC
+    - cron: '1 21 * * 0'
+  workflow_dispatch: # Ручной запуск по кнопке
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate epg.xml
+        run: python3 ci_epg_sync.py
+        env:
+          EPG_URL: ${{ secrets.EPG_URL || 'https://iptvx.one/EPG_NOARCH' }}
+
+      - name: Commit & Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add epg.xml
+          if git diff --staged --quiet; then
+            echo "📭 Изменений нет, коммит пропущен"
+          else
+            git commit -m "📡 Авто-обновление EPG ($(date +'%d.%m.%Y %H:%M'))"
+            git push
+          fi

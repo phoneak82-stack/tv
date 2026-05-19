@@ -20,7 +20,7 @@ EPG_MIRRORS = [
     ('https://iptvx.one/EPG_NOARCH', 'Без архива (оптимально)')
 ]
 
-DEFAULT_EPG_URL = 'https://iptvx.one/EPG_NOARCH'
+DEFAULT_EPG_URL = 'https://iptvx.one/EPG'
 PLAYLIST = "pl.m3u"
 OUTPUT = "epg.xml"
 

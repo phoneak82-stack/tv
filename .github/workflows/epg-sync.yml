@@ -4,7 +4,11 @@ on:
   schedule:
     # ⏰ Понедельник 00:01 МСК = Воскресенье 21:01 UTC
     - cron: '1 21 * * 0'
-  workflow_dispatch: # Ручной запуск по кнопке
+  workflow_dispatch: # Ручной запуск
+
+# 🔥 ДОБАВЛЕНО: Разрешение на запись в репозиторий
+permissions:
+  contents: write
 
 jobs:
   sync:
@@ -29,8 +33,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add epg.xml
           if git diff --staged --quiet; then
-            echo "📭 Изменений нет, коммит пропущен"
+            echo "📭 Изменений нет"
           else
             git commit -m "📡 Авто-обновление EPG ($(date +'%d.%m.%Y %H:%M'))"
-            git push
+            git push  # Теперь сработает, так как есть permission: contents: write
           fi

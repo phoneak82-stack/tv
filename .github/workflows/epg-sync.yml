@@ -1,12 +1,18 @@
-name: EPG Weekly Sync
+name: EPG Auto Sync
 
 on:
+  # 🔄 ЕЖЕДНЕВНЫЙ ЗАПУСК (для тестов)
   schedule:
-    # ⏰ Понедельник 00:01 МСК = Воскресенье 21:01 UTC
-    - cron: '1 21 * * 0'
-  workflow_dispatch: # Ручной запуск
+    - cron: '1 21 * * *'  # Каждый день в 21:01 UTC = 00:01 МСК
+  
+  # 🗓️ НЕДЕЛЬНЫЙ ЗАПУСК (раскомментируйте для продакшена, закомментируйте daily)
+  # schedule:
+  #   - cron: '1 21 * * 0'  # Каждое воскресенье 21:01 UTC = понедельник 00:01 МСК
+  
+  # 🎯 РУЧНОЙ ЗАПУСК
+  workflow_dispatch:
 
-# 🔥 ДОБАВЛЕНО: Разрешение на запись в репозиторий
+# 🔐 Права на запись в репозиторий
 permissions:
   contents: write
 
@@ -14,27 +20,31 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: 📥 Checkout репозитория
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-python@v5
+      - name: 🐍 Установка Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Generate epg.xml
+      - name: ⚙️ Генерация epg.xml
         run: python3 ci_epg_sync.py
         env:
-          EPG_URL: ${{ secrets.EPG_URL || 'https://iptvx.one/EPG_NOARCH' }}
+          EPG_URL: ${{ secrets.EPG_URL }}
 
-      - name: Commit & Push
+      - name: 📤 Commit & Push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add epg.xml
+          
           if git diff --staged --quiet; then
-            echo "📭 Изменений нет"
+            echo "📭 Изменений нет, коммит пропущен"
           else
             git commit -m "📡 Авто-обновление EPG ($(date +'%d.%m.%Y %H:%M'))"
-            git push  # Теперь сработает, так как есть permission: contents: write
+            git push
+            echo "✅ Файл обновлён"
           fi

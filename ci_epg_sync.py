@@ -149,7 +149,8 @@ def main():
     log(f"📋 Плейлист: {len(ids)} ID, {len(names)} имён")
     
     # Выбор источника EPG
-    epg_url = os.getenv("EPG_URL", DEFAULT_EPG_URL)
+    # Если секрет задан но пустой — используем дефолт 
+    epg_url = (os.getenv("EPG_URL") or "").strip() or DEFAULT_EPG_URL
     log(f"📡 Источник EPG: {epg_url}")
     
     # Загрузка и фильтрация
